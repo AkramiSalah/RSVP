@@ -1,19 +1,38 @@
-// src/app/page.js
-'use client'; // Add this line to mark the file as a client component
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { auth } from "./firebase";
 
-import React, { useState, useEffect } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
+const HomePage = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-export default function Home() {
-  const [data, setData] = useState([]);
-  
   useEffect(() => {
-    // Your useEffect logic
-  }, []);
-  
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        router.push('/login');
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <div>
-      <h1>Home Page</h1>
+      <h1>Welcome, {user.displayName}</h1>
+      {/* Your component code */}
     </div>
   );
-}
+};
+
+export default HomePage;
